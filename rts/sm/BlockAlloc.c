@@ -563,8 +563,11 @@ freeGroup(bdescr *p)
   p->free = (void *)-1;  /* indicates that this block is free */
   p->gen = NULL;
   p->gen_no = 0;
-  /* fill the block group with garbage if sanity checking is on */
-  IF_DEBUG(sanity,memset(p->start, 0xaa, (W_)p->blocks * BLOCK_SIZE));
+  /* fill the block group with garbage if sanity checking is on or the RTS
+   * options was selected */
+  if(RtsFlags.GcFlags.doZeroingGC) {
+    memset(p->start, 0xaa, (W_)p->blocks * BLOCK_SIZE);
+  }
 
   if (p->blocks == 0) barf("freeGroup: block size is zero");
 

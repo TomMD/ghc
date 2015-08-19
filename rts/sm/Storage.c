@@ -614,13 +614,22 @@ allocNurseries (nat from, nat to)
         nurseries[i].n_blocks = n_blocks;
     }
 }
-      
+
 void
 resetNurseries (void)
 {
     next_nursery = 0;
     assignNurseriesToCapabilities(0, n_capabilities);
 
+    if(RtsFlags.GcFlags.doZeroingGC) {
+        bdescr *bd;
+        nat n;
+        for (n = 0; n < n_nurseries; n++) {
+            for (bd = nurseries[n].blocks; bd; bd = bd->link) {
+                memset(bd->start, 0xaa, BLOCK_SIZE);
+            }
+        }
+    }
 #ifdef DEBUG
     bdescr *bd;
     nat n;
@@ -628,7 +637,6 @@ resetNurseries (void)
         for (bd = nurseries[n].blocks; bd; bd = bd->link) {
             ASSERT(bd->gen_no == 0);
             ASSERT(bd->gen == g0);
-            IF_DEBUG(sanity, memset(bd->start, 0xaa, BLOCK_SIZE));
         }
     }
 #endif

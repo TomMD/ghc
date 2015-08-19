@@ -140,6 +140,7 @@ void initRtsFlagsDefaults(void)
     RtsFlags.GcFlags.compactThreshold   = 30.0;
     RtsFlags.GcFlags.sweep              = rtsFalse;
     RtsFlags.GcFlags.idleGCDelayTime    = USToTime(300000); // 300ms
+    RtsFlags.GcFlags.doZeroingGC        = rtsFalse;
 #ifdef THREADED_RTS
     RtsFlags.GcFlags.doIdleGC           = rtsTrue;
 #else
@@ -281,6 +282,7 @@ usage_text[] = {
 "  -c       Use in-place compaction for all oldest generation collections",
 "           (the default is to use copying)",
 "  -w       Use mark-region for the oldest generation (experimental)",
+"  -z       Overwrite garbage-collected memory with a constant value.",
 #if defined(THREADED_RTS)
 "  -I<sec>  Perform full GC after <sec> idle time (default: 0.3, 0 == off)",
 #endif
@@ -877,7 +879,8 @@ error = rtsTrue;
                           RtsFlags.DebugFlags.block_alloc = rtsTrue;
                           break;
                       case 'S':
-                          RtsFlags.DebugFlags.sanity = rtsTrue;
+                          RtsFlags.DebugFlags.sanity   = rtsTrue;
+                          RtsFlags.GcFlags.doZeroingGC = rtsTrue;
                           break;
                       case 't':
                           RtsFlags.DebugFlags.stable = rtsTrue;
@@ -962,6 +965,11 @@ error = rtsTrue;
                   if (RtsFlags.GcFlags.pcFreeHeap < 0 ||
                       RtsFlags.GcFlags.pcFreeHeap > 100)
                       bad_option( rts_argv[arg] );
+                  break;
+
+              case 'z':
+                  OPTION_SAFE;
+                  RtsFlags.GcFlags.doZeroingGC = rtsTrue;
                   break;
 
               case 'G':
